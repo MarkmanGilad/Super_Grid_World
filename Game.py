@@ -1,5 +1,5 @@
 from Code.Environement import Environement
-from Constants import *
+from Code.Constants import *
 from Code.Agent import *
 
 
@@ -24,6 +24,7 @@ def main ():
     env.agent.train()
     
     print ('Value*: \n', env.agent.Value)
+    # env.agent.Policy_improv()
     print ('Policy*: \n', env.agent.Policy)
     env.play()
 

@@ -1,5 +1,5 @@
 from Code.Environement import Environement
-from Constants import *
+from Code.Constants import *
 from Code.Agent import *
 
 

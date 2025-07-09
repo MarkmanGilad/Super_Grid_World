@@ -1,5 +1,5 @@
 import pygame
-from Constants import *
+from .Constants import *
 import numpy as np
 
 FPS = 60
