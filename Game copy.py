@@ -1,7 +1,7 @@
 import pygame
-from Graphics import *
-from Environement import Environement
-from Agent import *
+from Code.Graphics import *
+from Code.Environement import Environement
+from Code.Agent import *
 
 pygame.init()
 clock = pygame.time.Clock()

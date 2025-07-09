@@ -1,49 +1,31 @@
-import pygame
-from Graphics import *
-from Environement import Environement
-from Agent import *
+from Code.Environement import Environement
+from Constants import *
+from Code.Agent import *
 
-pygame.init()
-clock = pygame.time.Clock()
-env = Environement((0,0))
-graphics = Graphics(env)
-# agent = Random_Agent(env)
-agent = AI_Agent(env)
-# print ('Policy: \n ',agent.Policy)
-# print ('Value \n', agent.Value)
-# agent.policy_eval()
-# print ('Value: \n', agent.Value)
-# print(agent.Policy_improv())
-# print ('Policy: \n', agent.Policy)
-print(agent.Policy_Iteration())
-print ('Value*: \n', agent.Value)
-print ('Policy*: \n', agent.Policy)
-# agent.Value_iteration()
-# print ('Value*: \n', agent.Value)
-# print ('Policy*: \n', agent.Policy)
 
 
 def main ():
-    run = True
-    while (run):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-               run = False
-        
-        action = agent(env.state)
-        pygame.time.wait(100)
-        env.state, reward = env.move(env.state, action)
-        agent.add_reward(reward)
-        graphics(env.state)
-        print (f'{agent.Reward} ', end='\r')
-        if env.end_of_game(env.state):
-            pygame.time.wait(500)
-            env.reset()
-            graphics(env.state)
-        clock.tick(FPS)
+    board = [
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [-1,-1,-1, 0,-1,-1,-1, 0,-1,-1],
+        [ 0, 0, 0, 0,-1, 0,-1, 0,-1, 0],
+        [ 0,-1,-1,-1,-1, 0,-1, 0,-1, 0],
+        [ 0,-1, 0, 0, 0, 0,-1, 0, 0, 1],
+        [ 0, 0, 0,-1,-1, 0, 0,-1,-1,-1],
+        [-1,-1,-1,-1, 0, 0,-1, 10, 0, 0],
+        [ 0, 0, 0, 0, 0,-1,-1,-1,-1, 0],
+        [-1, 0,-1,-1,-1, 0, 0, 0, 0.1, 0],
+        [ 0, 0, 0, 0, 0, 0,-1, 0, 0, 0],
+    ] 
+    start_state = 4,8 #2, 9 
+    env = Environement(state=start_state, board=board)  
     
-    pygame.time.wait(200)
+    env.agent = AI_Agent(env, mode="Value")
+    env.agent.train()
+    
+    print ('Value*: \n', env.agent.Value)
+    print ('Policy*: \n', env.agent.Policy)
+    env.play()
 
 
 

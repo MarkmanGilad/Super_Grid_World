@@ -1,14 +1,12 @@
 import random
-from typing import Any
 import numpy as np
-from Graphics import *
-from Action import Action
-from Environement import Environement as Env
+from .Action import Action
+import math
 
 
 class Random_Agent:
     def __init__(self, env) -> None:
-        self.env : Env = env
+        self.env = env
         self.Reward = 0
     
     def get_action(self, state):
@@ -22,26 +20,45 @@ class Random_Agent:
         return self.get_action(state)
     
 class AI_Agent:
-    def __init__(self, env) -> None:
-        self.env : Env = env
+    def __init__(self, env, mode = "policy") -> None:
+        self.env = env
         self.Reward = 0
-        self.Policy = np.full((ROWS, COLS), 3)
-        self.Value = np.zeros((ROWS, COLS))
-        self.gamma = 0.9
+        self.Policy = np.full((self.env.rows, self.env.cols), 3)
+        self.Value = np.zeros((self.env.rows, self.env.cols))
+        self.gamma = 1
+        self.mode = mode
+
 
     def get_action(self, state):
-        return Action(self.Policy[state])
-            
+        if self.mode == "policy":
+            return Action(self.Policy[state])
+        else:
+            return self.get_action_from_Value(state)
+         
+    def get_action_from_Value (self, state):
+        v_max = -math.inf
+        best_action = None
+        for action in Action:
+            new_state, reward = self.env.move(state, action)
+            if v_max < reward + self.gamma * self.Value[new_state]:
+                v_max = reward + self.gamma * self.Value[new_state]                            
+                best_action = action
+        return best_action
+
     def add_reward(self, reward):
         self.Reward += reward
 
+    def set_policy(self, policy):
+        self.Policy = np.array(policy)
+
+    # region
     def policy_eval (self):
         accuracy = 0.0001
         acc = 1
         while acc > accuracy:
             acc = 0
-            for row in range(ROWS):
-                for col in range(COLS):
+            for row in range(self.env.rows):
+                for col in range(self.env.cols):
                     state = row,col
                     if self.env.board[state] != 0:
                         continue
@@ -54,12 +71,12 @@ class AI_Agent:
 
     def Policy_improv (self):
         stable = True
-        for row in range(ROWS):
-            for col in range(COLS):
+        for row in range(self.env.rows):
+            for col in range(self.env.cols):
                 state = row,col
                 if self.env.board[state] != 0:
                     continue
-                v_max = -1000
+                v_max = -math.inf
                 best_action = None
                 for action in Action:
                     new_state, reward = self.env.move(state, action)
@@ -70,6 +87,7 @@ class AI_Agent:
                     self.Policy[state] = best_action.value
                     stable = False
         return stable
+    
 
     def Policy_Iteration (self):
         policy_stable = False
@@ -79,15 +97,18 @@ class AI_Agent:
             policy_stable = self.Policy_improv()
         return policy_stable
 
-    def Value_iteration (self):
-        accuracy = 0.0001
+    # endregion
+
+    def train (self):
+        accuracy = 0.00001
         acc = 1
-        while acc> accuracy:
+        # while acc> accuracy:
+        for epoch in range(100):
             acc = 0
-            for row in range(ROWS):
-                for col in range(COLS):
+            for row in range(self.env.rows):
+                for col in range(self.env.cols):
                     state = row, col
-                    if self.env.board[state] != 0:
+                    if self.env.end_of_game(state):
                         continue
                     best_value = -1000
                     for action in Action:   # only legal actions
@@ -99,7 +120,7 @@ class AI_Agent:
                     self.Value[state] = best_value
                     acc = max(acc, abs(old_value - best_value))
         
-        self.Policy_improv()
+        # self.Policy_improv()
 
     def __call__(self, state):
         return self.get_action(state)
