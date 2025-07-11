@@ -1,10 +1,9 @@
 from Code.Environement import Environement
-from Code.Constants import *
 from Code.Agent import *
 
 
-
 def main ():
+
     board = [
         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [-1,-1,-1, 0,-1,-1,-1, 0,-1,-1],
@@ -26,9 +25,11 @@ def main ():
     print ('Value*: \n', env.agent.Value)
     env.agent.Policy_from_value()
     print ('Policy*: \n', env.agent.Policy)
+    
     env.play()
-
 
 
 if __name__ == '__main__':
     main()
+
+

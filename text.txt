@@ -1,0 +1,30 @@
+def get_action (V, s):
+    
+    for a in Actions:
+        s', r = env.move (s, a)
+        if V(s) = r + V(s'):
+            return action
+    return None
+
+
+Value Iteration:
+    V <- value table with random numbers
+    
+    Do 100 times:
+        for every state:
+            if is_end_of_game(state):
+                V[state] = 0
+                continue
+            best_value = -inf
+            for all actions:
+                next_state, reward = env(state, action)
+                new_value = reward + V[next_state]
+                if new_value > best_value:
+                    best_value = new_value
+            V[state] = best_value
+            
+
+
+
+
+    

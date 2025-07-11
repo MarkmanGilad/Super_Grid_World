@@ -3,22 +3,6 @@ import numpy as np
 from .Action import Action
 import math
 
-
-class Random_Agent:
-    def __init__(self, env) -> None:
-        self.env = env
-        self.Reward = 0
-    
-    def get_action(self, state):
-        actions = self.env.get_actions(state)
-        return random.choice(actions)
-            
-    def add_reward(self, reward):
-        self.Reward += reward
-
-    def __call__(self, state):
-        return self.get_action(state)
-    
 class AI_Agent:
     def __init__(self, env, mode = "policy") -> None:
         self.env = env
@@ -36,20 +20,22 @@ class AI_Agent:
             return self.get_action_from_Value(state)
          
     def get_action_from_Value (self, state):
-        v_max = -math.inf
-        best_action = None
+        # return NotImplemented
+        # Write your code here
         for action in Action:
             new_state, reward = self.env.move(state, action)
-            if v_max < reward + self.gamma * self.Value[new_state]:
-                v_max = reward + self.gamma * self.Value[new_state]                            
-                best_action = action
-        return best_action
+            if np.isclose(self.Value[state], reward + self.gamma * self.Value[new_state]):
+                return action
+        return None
 
     def add_reward(self, reward):
         self.Reward += reward
 
     def set_policy(self, policy):
         self.Policy = np.array(policy)
+
+    def set_value (self, value):
+        self.Value = np.array(value)
 
     # region
     def policy_eval (self):
@@ -69,7 +55,7 @@ class AI_Agent:
                     self.Value[state] = new_value
                     acc = max(acc, abs(old_value - new_value))
 
-    def Policy_improv (self):
+    def Policy_from_value (self):
         stable = True
         for row in range(self.env.rows):
             for col in range(self.env.cols):
@@ -97,30 +83,45 @@ class AI_Agent:
             policy_stable = self.Policy_improv()
         return policy_stable
 
+    # def value_iteration (self):
+    #     accuracy = 0.00001
+    #     acc = 1
+    #     # while acc> accuracy:
+    #     for epoch in range(100):
+    #         acc = 0
+    #         for row in range(self.env.rows):
+    #             for col in range(self.env.cols):
+    #                 state = row, col
+    #                 if self.env.end_of_game(state):
+    #                     continue
+    #                 best_value = -1000
+    #                 for action in Action:   # only legal actions
+    #                     new_state, reward = self.env(state, action)
+    #                     new_value = reward + self.gamma * self.Value[new_state]
+    #                     if new_value > best_value:
+    #                         best_value = new_value
+    #                 old_value = self.Value[state]
+    #                 self.Value[state] = best_value
+    #                 acc = max(acc, abs(old_value - best_value))
+        
+        # self.Policy_from_value()
     # endregion
 
-    def train (self):
-        accuracy = 0.00001
-        acc = 1
-        # while acc> accuracy:
-        for epoch in range(100):
-            acc = 0
+    def value_iteration (self, epochs = 100):
+        for epoch in range(epochs):
             for row in range(self.env.rows):
                 for col in range(self.env.cols):
                     state = row, col
                     if self.env.end_of_game(state):
+                        self.Value[state] = 0
                         continue
-                    best_value = -1000
-                    for action in Action:   # only legal actions
-                        new_state, reward = self.env(state, action)
-                        new_value = reward + self.gamma * self.Value[new_state]
+                    best_value = -math.inf
+                    for action in Action:   
+                        next_state, reward = self.env(state, action)
+                        new_value = reward + self.gamma * self.Value[next_state]
                         if new_value > best_value:
                             best_value = new_value
-                    old_value = self.Value[state]
                     self.Value[state] = best_value
-                    acc = max(acc, abs(old_value - best_value))
-        
-        # self.Policy_improv()
 
     def __call__(self, state):
         return self.get_action(state)

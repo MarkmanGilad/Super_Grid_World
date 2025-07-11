@@ -11,6 +11,7 @@ class Environement:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.graphics = Graphics(self)
+        self.agent = AI_Agent(self)
 
     def reset(self):
         self.state = self.init_state
