@@ -23,7 +23,12 @@ class Graphics:
         self.height = self.env.rows * SQUARE_SIZE
         self.width = self.env.cols * SQUARE_SIZE
         
-        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.display = pygame.display.set_mode((self.width, self.height + 100))
+        self.header = pygame.Surface((self.width, 100))
+        self.screen = pygame.Surface((self.width, self.height + 100))
+        
+        self.display.blit(self.header, (0,0))
+        self.display.blit(self.screen, (0,100))
         pygame.display.set_caption('Maze')
         
     
@@ -33,9 +38,13 @@ class Graphics:
 
     def draw (self, state):
         self.screen.fill(LIGHTGRAY)
+        self.header.fill(DARK_GRAY)
         self.draw_lines()
-        self.draw_end_state()
+        self.draw_end_state(state)
         self.draw_img(state,self.robot)
+        
+        self.display.blit(self.header, (0,0))
+        self.display.blit(self.screen, (0,100))
         pygame.display.update()
         
     def draw_lines(self):
@@ -46,9 +55,11 @@ class Graphics:
             pygame.draw.line(self.screen, BLACK, (i * SQUARE_SIZE, 0), 
                              (i * SQUARE_SIZE , self.height), width=LINE_WIDTH)
     
-    def draw_end_state(self):
+    def draw_end_state(self, state):
         for row in range(self.rows):
             for col in range(self.cols):
+                if self.env.hidden and (row,col) != state:
+                    continue
                 if self.env.board[row,col] < 0:
                     self.draw_square((row,col), RED)
                     self.draw_txt((row,col),str(self.format_number(self.env.board[row,col])))
@@ -68,6 +79,14 @@ class Graphics:
         font = pygame.font.SysFont('Ariel', 48)
         txt_surf = font.render(txt, True, BLACK)
         self.screen.blit(txt_surf, (x + 15,y+20))
+
+    def write (self, text, pos = (50, 20), color = BLACK, background=DARK_GRAY):
+        surface = self.header
+        font = pygame.font.SysFont("arial", 36)
+        text_surface = font.render(text, True, color, background)
+        surface.blit(text_surface, pos)
+        # self.display.blit(surface, (0,0))
+        # pygame.display.update()
 
     def draw_img (self, row_col, img):
         x, y = self.calc_pos(row_col)

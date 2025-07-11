@@ -4,16 +4,23 @@ import numpy as np
 from .Agent import AI_Agent
 
 class Environement:
-    def __init__(self, state = (0,0), board = None):
+    def __init__(self, state = (0,0), board = None, hidden = False, agent = None):
         self.init_state = state
         self.state = state
         self.set_board (board)
         pygame.init()
         self.clock = pygame.time.Clock()
         self.graphics = Graphics(self)
-        self.agent = AI_Agent(self)
+        if agent:
+            self.agent = agent
+        else:    
+            self.agent = AI_Agent(self)
+        self.hidden = hidden
+        self.delay = 100
+        self.reward = 0
 
     def reset(self):
+        pygame.time.wait(self.delay)
         self.state = self.init_state
         self.set_board(self.init_board)
 
@@ -90,12 +97,12 @@ class Environement:
             
             action = self.agent(self.state)
             pygame.time.wait(100)
-            self.state, reward = self.move(self.state, action)
-            self.agent.add_reward(reward)
+            self.state, self.reward = self.move(self.state, action)
+            
+            # self.agent.add_reward(reward)
             self.graphics(self.state)
             # print (f'{agent.Reward} ', end='\r')
             if self.end_of_game(self.state):
-                pygame.time.wait(100)
                 self.reset()
                 self.graphics(self.state)
             self.clock.tick(FPS)
