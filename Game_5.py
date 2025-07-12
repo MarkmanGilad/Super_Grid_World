@@ -5,18 +5,17 @@ from Code.Constants import *
 
 def main ():
 
-    board = secret_board
+    board = secret_board_1
    
     start_state = 0,3  
     
-    env = Environement(state=start_state, board=board, hidden=True)  
+    env = Environement(state=start_state, board=board, hidden=False)  
     agent = AI_Agent(env, mode="Q_Table")
     env.agent = agent
-    env.reset_delay = 10
-    env.delay = 0
-    env.train(epochs=500, epsilon=0.9)
-    print(env.agent.Q_table)
-
+    env.reset_delay = 50
+    env.delay = 50
+    env.train(epochs=20)
+    
     env.reset_delay = 1000
     env.delay = 100
     env.hidden = False

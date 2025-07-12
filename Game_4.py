@@ -5,7 +5,7 @@ from Code.Constants import *
 
 def main ():
 
-    board = secret_board
+    board = secret_board_1
    
     start_state = 1,2  
     

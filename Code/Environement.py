@@ -3,6 +3,7 @@ from .Action import Action
 import numpy as np
 from .Agent import AI_Agent
 import random
+import math
 
 class Environement:
     def __init__(self, state = (0,0), board = None, hidden = False, agent = None):
@@ -21,7 +22,7 @@ class Environement:
         self.delay = 100
         self.reward = 0
         self.sum_reward = 0
-        self.step_reward = -0.01
+        self.step_reward = -0.1
 
     def reset(self):
         pygame.time.wait(self.reset_delay)
@@ -97,6 +98,7 @@ class Environement:
         
     def play (self):
         run = True
+        self.reset()
         self.graphics(self.state)
         pygame.time.wait(self.reset_delay)
         while (run):
@@ -119,25 +121,31 @@ class Environement:
         
         pygame.time.wait(self.reset_delay)
         pygame.quit()
-
-    def train (self, epochs=100, epsilon=0.5, visualize=True, gamma=1.0):
-        
+    
+    def train (self, epochs=100, epsilon=0.7, visualize=True, gamma=1.0):
+        max_steps = 1
         for epoch in range(epochs):
             self.reset()
             self.graphics(self.state)
             print(epoch, end='\r')
+            step = 0
             while not self.end_of_game(self.state):
+                step += 1
                 self.events = pygame.event.get() 
                 for event in self.events:
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         return
 
-                if np.random.rand() < epsilon:
+                if step / max_steps > 0.9:
+                    eps = 0.5
+                else:
+                    eps = 0
+                if random.random() < eps:
                     action = random.choice(list(Action))
-                    pygame.time.delay(self.delay)
                 else:
                     action = self.agent.get_action(self.state)
+                pygame.time.delay(self.delay)
                 next_state, reward = self.move(self.state, action)
                 if reward != 0:
                     self.reward = reward
@@ -147,12 +155,10 @@ class Environement:
                 next_state_action = next_state[0], next_state[1], self.agent.get_action_from_Q_table(next_state).value
 
                 self.agent.Q_table[state_action] = reward + self.agent.Q_table[next_state_action]
-                
-
-
                 self.state = next_state
                 self.graphics(self.state)
                 self.clock.tick(FPS)
+            max_steps = max(step, max_steps)
             
         pygame.time.wait(self.reset_delay)
         print("End training...")
