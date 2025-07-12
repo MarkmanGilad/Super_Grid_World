@@ -2,6 +2,7 @@ from .Graphics import *
 from .Action import Action
 import numpy as np
 from .Agent import AI_Agent
+import random
 
 class Environement:
     def __init__(self, state = (0,0), board = None, hidden = False, agent = None):
@@ -16,13 +17,16 @@ class Environement:
         else:    
             self.agent = AI_Agent(self)
         self.hidden = hidden
-        self.delay = 100
+        self.reset_delay = 1000
         self.reward = 0
+        self.sum_reward = 0
 
     def reset(self):
-        pygame.time.wait(self.delay)
+        pygame.time.wait(self.reset_delay)
         self.state = self.init_state
         self.set_board(self.init_board)
+        self.sum_reward = 0
+        self.reward = 0
 
     # def set_end_state(self, reward, color):
     #     self.end_state[reward] = color
@@ -62,11 +66,13 @@ class Environement:
         elif action == Action.RIGHT and col < self.cols -1:
             x = 1
         new_state = row + y, col + x
-        reward = self.Reward(new_state)
+        reward = self.Reward(new_state, action)
         
         return new_state, reward
 
-    def Reward (self, new_state):
+    def Reward (self, new_state, action):
+        if action is None:
+            return 0
         return -0.1 + float(self.board[new_state])
 
     def get_actions (self, state):
@@ -89,27 +95,30 @@ class Environement:
         
     def play (self):
         run = True
+        self.graphics(self.state)
+        pygame.time.wait(self.reset_delay)
         while (run):
-            events = pygame.event.get()
-            for event in events:
+            self.events = pygame.event.get() 
+            for event in self.events:
                 if event.type == pygame.QUIT:
                     run = False
             
-            action = self.agent(self.state)
-            pygame.time.wait(100)
-            self.state, self.reward = self.move(self.state, action)
-            
-            # self.agent.add_reward(reward)
+            action = self.agent(self.state)  
+            self.state, reward = self.move(self.state, action)
+            if reward != 0:
+                self.reward = reward
+                self.sum_reward += self.reward
             self.graphics(self.state)
-            # print (f'{agent.Reward} ', end='\r')
             if self.end_of_game(self.state):
                 self.reset()
                 self.graphics(self.state)
             self.clock.tick(FPS)
         
-        pygame.time.wait(200)
+        pygame.time.wait(self.reset_delay)
         pygame.quit()
+
+    def train (self, epochs=100, epsilon=0.1, visualize=True, delay=50, gamma=1.0):
+        pass
 
     def __call__(self, state, action):
         return self.move(state, action)
-        

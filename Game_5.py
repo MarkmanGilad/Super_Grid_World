@@ -10,7 +10,7 @@ def main ():
     start_state = 1,2  
     
     env = Environement(state=start_state, board=board, hidden=True)  
-    agent = Human_Agent(env)
+    agent = AI_Agent(env, mode="Q_Table")
     env.agent = agent
     env.reset_delay = 1000
     

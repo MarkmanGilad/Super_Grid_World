@@ -38,7 +38,11 @@ class Graphics:
 
     def draw (self, state):
         self.screen.fill(LIGHTGRAY)
-        self.header.fill(DARK_GRAY)
+        self.header.fill(BLUE)
+        self.write(f"Reward: {self.env.reward:.2f}   |   Sum Reward: {self.env.sum_reward:.2f}", 
+               pos=(30, 10), color=WHITE, background=BLUE)
+        self.write(f"State: {state}", 
+               pos=(30, 40), color=WHITE, background=BLUE)
         self.draw_lines()
         self.draw_end_state(state)
         self.draw_img(state,self.robot)
@@ -66,9 +70,9 @@ class Graphics:
                 elif self.env.board[row,col] > 0:
                     self.draw_square((row,col), GREEN)
                     self.draw_txt((row,col),str(self.format_number(self.env.board[row,col])))
-                # elif self.env.board[row,col] in self.end_state:
-                #     self.draw_square((row,col), self.end_state[self.env.board[row,col]])
-                #     self.draw_txt((row,col),str(self.env.board[row,col]))
+                else:
+                    self.draw_square((row,col), WHITE)
+                    
 
     def draw_square (self, row_col, color):
         pos = self.calc_pos(row_col)
@@ -80,9 +84,9 @@ class Graphics:
         txt_surf = font.render(txt, True, BLACK)
         self.screen.blit(txt_surf, (x + 15,y+20))
 
-    def write (self, text, pos = (50, 20), color = BLACK, background=DARK_GRAY):
+    def write (self, text, pos = (50, 20), color = BLACK, background=BLUE, font_size = 20):
         surface = self.header
-        font = pygame.font.SysFont("arial", 36)
+        font = pygame.font.SysFont("arial", font_size)
         text_surface = font.render(text, True, color, background)
         surface.blit(text_surface, pos)
         # self.display.blit(surface, (0,0))

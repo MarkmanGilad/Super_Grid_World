@@ -1,7 +1,7 @@
-import random
 import numpy as np
 from .Action import Action
 import math
+import pygame
 
 class AI_Agent:
     def __init__(self, env, mode = "policy") -> None:
@@ -9,15 +9,21 @@ class AI_Agent:
         self.Reward = 0
         self.Policy = np.full((self.env.rows, self.env.cols), 3)
         self.Value = np.zeros((self.env.rows, self.env.cols))
+        self.Q_table = np.zeros((self.env.rows, self.env.cols, len(Action)))
         self.gamma = 1
         self.mode = mode
 
 
     def get_action(self, state):
+        pygame.time.delay(100)
         if self.mode == "policy":
             return Action(self.Policy[state])
-        else:
+        elif self.mode == "Value":
             return self.get_action_from_Value(state)
+        elif self.mode == "Q_Table":
+            pass
+        else:
+            return NotImplemented
          
     def get_action_from_Value (self, state):
         # return NotImplemented
@@ -27,6 +33,10 @@ class AI_Agent:
             if np.isclose(self.Value[state], reward + self.gamma * self.Value[new_state]):
                 return action
         return None
+
+    def get_action_from_Q_table(self, state):
+        action = np.argmax(self.Q_Table[state])
+        return Action(action)
 
     def add_reward(self, reward):
         self.Reward += reward
@@ -123,6 +133,7 @@ class AI_Agent:
                             best_value = new_value
                     self.Value[state] = best_value
 
+    
     def __call__(self, state):
         return self.get_action(state)
     
