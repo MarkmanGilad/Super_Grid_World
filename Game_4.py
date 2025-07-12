@@ -12,8 +12,7 @@ def main ():
     env = Environement(state=start_state, board=board, hidden=True)  
     agent = Human_Agent(env)
     env.agent = agent
-    env.reset_delay = 1000
-    
+        
     env.play()
 
 

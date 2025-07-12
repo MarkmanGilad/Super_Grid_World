@@ -18,8 +18,10 @@ class Environement:
             self.agent = AI_Agent(self)
         self.hidden = hidden
         self.reset_delay = 1000
+        self.delay = 100
         self.reward = 0
         self.sum_reward = 0
+        self.step_reward = -0.01
 
     def reset(self):
         pygame.time.wait(self.reset_delay)
@@ -73,7 +75,7 @@ class Environement:
     def Reward (self, new_state, action):
         if action is None:
             return 0
-        return -0.1 + float(self.board[new_state])
+        return self.step_reward + float(self.board[new_state])
 
     def get_actions (self, state):
         actions = []
@@ -103,7 +105,8 @@ class Environement:
                 if event.type == pygame.QUIT:
                     run = False
             
-            action = self.agent(self.state)  
+            action = self.agent(self.state) 
+            pygame.time.delay(self.delay) 
             self.state, reward = self.move(self.state, action)
             if reward != 0:
                 self.reward = reward
@@ -117,8 +120,44 @@ class Environement:
         pygame.time.wait(self.reset_delay)
         pygame.quit()
 
-    def train (self, epochs=100, epsilon=0.1, visualize=True, delay=50, gamma=1.0):
-        pass
+    def train (self, epochs=100, epsilon=0.5, visualize=True, gamma=1.0):
+        
+        for epoch in range(epochs):
+            self.reset()
+            self.graphics(self.state)
+            print(epoch, end='\r')
+            while not self.end_of_game(self.state):
+                self.events = pygame.event.get() 
+                for event in self.events:
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        return
+
+                if np.random.rand() < epsilon:
+                    action = random.choice(list(Action))
+                    pygame.time.delay(self.delay)
+                else:
+                    action = self.agent.get_action(self.state)
+                next_state, reward = self.move(self.state, action)
+                if reward != 0:
+                    self.reward = reward
+                    self.sum_reward += self.reward
+                
+                state_action = self.state[0], self.state[1], action.value
+                next_state_action = next_state[0], next_state[1], self.agent.get_action_from_Q_table(next_state).value
+
+                self.agent.Q_table[state_action] = reward + self.agent.Q_table[next_state_action]
+                
+
+
+                self.state = next_state
+                self.graphics(self.state)
+                self.clock.tick(FPS)
+            
+        pygame.time.wait(self.reset_delay)
+        print("End training...")
+        
+
 
     def __call__(self, state, action):
         return self.move(state, action)

@@ -15,13 +15,12 @@ class AI_Agent:
 
 
     def get_action(self, state):
-        pygame.time.delay(100)
         if self.mode == "policy":
             return Action(self.Policy[state])
         elif self.mode == "Value":
             return self.get_action_from_Value(state)
         elif self.mode == "Q_Table":
-            pass
+            return self.get_action_from_Q_table(state)
         else:
             return NotImplemented
          
@@ -35,7 +34,7 @@ class AI_Agent:
         return None
 
     def get_action_from_Q_table(self, state):
-        action = np.argmax(self.Q_Table[state])
+        action = np.argmax(self.Q_table[state])
         return Action(action)
 
     def add_reward(self, reward):
