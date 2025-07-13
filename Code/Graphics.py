@@ -41,7 +41,7 @@ class Graphics:
         self.header.fill(BLUE)
         self.write(f"Reward: {self.env.reward:.2f}   |   Sum Reward: {self.env.sum_reward:.2f}", 
                pos=(30, 10), color=WHITE, background=BLUE)
-        self.write(f"State: {state}", 
+        self.write(f"State: {state}    |    Terminal Value: {self.env.board[state]}", 
                pos=(30, 40), color=WHITE, background=BLUE)
         self.draw_lines()
         self.draw_end_state(state)

@@ -4,22 +4,18 @@ from Code.Human_Agent import Human_Agent
 from Code.Constants import *
 
 def main ():
-
     board = secret_board_1
-   
-    start_state = 0,3  
+    start_state = 1,2  
     
-    env = Environement(state=start_state, board=board, hidden=False)  
-    agent = AI_Agent(env, mode="Value")
-    env.agent = agent
-    env.reset_delay = 100
-    env.delay = 50
-    env.train(epochs=20,epsilon=0.1)
-    
-    print(agent.Value)
+    env = Environement(state=start_state, board=board, hidden=True)  
+    env.agent = AI_Agent(env, mode="Value")
+    env.delay, env.reset_delay = 50, 100
 
-    env.reset_delay = 1000
-    env.delay = 100
+    env.train(epochs=5)
+    
+    print(env.agent.Value)
+
+    env.delay, env.reset_delay = 100, 1000
     env.hidden = False
     env.play()
 

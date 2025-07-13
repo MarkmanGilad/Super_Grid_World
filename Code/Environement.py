@@ -100,9 +100,9 @@ class Environement:
     def play (self):
         run = True
         self.reset()
-        self.graphics(self.state)
-        pygame.time.wait(self.reset_delay)
         while (run):
+            self.graphics(self.state)
+            pygame.time.wait(self.delay)
             self.events = pygame.event.get() 
             for event in self.events:
                 if event.type == pygame.QUIT:
@@ -125,7 +125,7 @@ class Environement:
         pygame.time.wait(self.reset_delay)
         pygame.quit()
     
-    def train (self, epochs=100, epsilon=0.5, visualize=True, gamma=1.0):
+    def train (self, epochs=100, epsilon=0.0, visualize=True, gamma=1.0):
         for epoch in range(epochs):
             self.reset()
             self.graphics(self.state)
@@ -142,8 +142,8 @@ class Environement:
                 if random.random() < epsilon:
                     action = random.choice(list(Action))
                 else:
-                    # action = self.agent.get_action(self.state)
                     action = self.agent.get_action(self.state)
+
                 pygame.time.delay(self.delay)
 
                 next_state, reward = self.move(self.state, action)
