@@ -76,7 +76,7 @@ class Environement:
     def Reward (self, new_state, action):
         if action is None:
             return 0
-        return self.step_reward + float(self.board[new_state])
+        return self.step_reward #+ float(self.board[new_state])
 
     def get_actions (self, state):
         actions = []
@@ -93,6 +93,7 @@ class Environement:
 
     def end_of_game(self, state):
         if self.board[state] != 0:
+            self.sum_reward += self.board[state]
             return True
         return False
         
@@ -105,7 +106,8 @@ class Environement:
             self.events = pygame.event.get() 
             for event in self.events:
                 if event.type == pygame.QUIT:
-                    run = False
+                    pygame.quit()
+                    return
             
             action = self.agent(self.state) 
             pygame.time.delay(self.delay) 
@@ -115,15 +117,15 @@ class Environement:
                 self.sum_reward += self.reward
             self.graphics(self.state)
             if self.end_of_game(self.state):
-                self.reset()
                 self.graphics(self.state)
+                self.reset()
+                
             self.clock.tick(FPS)
         
         pygame.time.wait(self.reset_delay)
         pygame.quit()
     
-    def train (self, epochs=100, epsilon=0.7, visualize=True, gamma=1.0):
-        max_steps = 1
+    def train (self, epochs=100, epsilon=0.5, visualize=True, gamma=1.0):
         for epoch in range(epochs):
             self.reset()
             self.graphics(self.state)
@@ -134,35 +136,38 @@ class Environement:
                 self.events = pygame.event.get() 
                 for event in self.events:
                     if event.type == pygame.QUIT:
-                        pygame.quit()
+                        # pygame.quit()
                         return
 
-                if step / max_steps > 0.9:
-                    eps = 0.5
-                else:
-                    eps = 0
-                if random.random() < eps:
+                if random.random() < epsilon:
                     action = random.choice(list(Action))
                 else:
+                    # action = self.agent.get_action(self.state)
                     action = self.agent.get_action(self.state)
                 pygame.time.delay(self.delay)
+
                 next_state, reward = self.move(self.state, action)
+                
                 if reward != 0:
                     self.reward = reward
                     self.sum_reward += self.reward
-                
-                state_action = self.state[0], self.state[1], action.value
-                next_state_action = next_state[0], next_state[1], self.agent.get_action_from_Q_table(next_state).value
 
-                self.agent.Q_table[state_action] = reward + self.agent.Q_table[next_state_action]
+                if self.end_of_game(next_state):
+                    self.agent.Value[next_state] = self.board[next_state]
+                    self.sum_reward = self.board[next_state]
+                                
+                _, best_value = self.agent.get_best_action_value(self.state)
+                self.agent.Value[self.state] = reward + best_value
+
                 self.state = next_state
                 self.graphics(self.state)
                 self.clock.tick(FPS)
-            max_steps = max(step, max_steps)
+
             
         pygame.time.wait(self.reset_delay)
         print("End training...")
         
+    
 
 
     def __call__(self, state, action):

@@ -10,12 +10,14 @@ def main ():
     start_state = 0,3  
     
     env = Environement(state=start_state, board=board, hidden=False)  
-    agent = AI_Agent(env, mode="Q_Table")
+    agent = AI_Agent(env, mode="Value")
     env.agent = agent
-    env.reset_delay = 50
+    env.reset_delay = 100
     env.delay = 50
-    env.train(epochs=20)
+    env.train(epochs=20,epsilon=0.1)
     
+    print(agent.Value)
+
     env.reset_delay = 1000
     env.delay = 100
     env.hidden = False

@@ -9,18 +9,16 @@ class AI_Agent:
         self.Reward = 0
         self.Policy = np.full((self.env.rows, self.env.cols), 3)
         self.Value = np.zeros((self.env.rows, self.env.cols))
-        self.Q_table = np.zeros((self.env.rows, self.env.cols, len(Action)))
-        self.gamma = 1
+        # self.Q_table = np.zeros((self.env.rows, self.env.cols, len(Action)))
         self.mode = mode
-
 
     def get_action(self, state):
         if self.mode == "policy":
             return Action(self.Policy[state])
         elif self.mode == "Value":
-            return self.get_action_from_Value(state)
-        elif self.mode == "Q_Table":
-            return self.get_action_from_Q_table(state)
+            action, _ = self.get_best_action_value(state)
+            return action
+            # return self.get_action_from_Value(state)
         else:
             return NotImplemented
          
@@ -29,13 +27,24 @@ class AI_Agent:
         # Write your code here
         for action in Action:
             new_state, reward = self.env.move(state, action)
-            if np.isclose(self.Value[state], reward + self.gamma * self.Value[new_state]):
+            if np.isclose(self.Value[state], reward + self.Value[new_state]):
                 return action
         return None
 
-    def get_action_from_Q_table(self, state):
-        action = np.argmax(self.Q_table[state])
-        return Action(action)
+    def get_best_action_value (self, state):
+        steps = [(-1 ,0), (0,1), (0, -1), (1, 0)] # up, right, left, down
+        values = []
+        for step in steps:
+            adj_state = state[0] + step[0], state[1] + step[1]
+            if 0 <= adj_state[0] < self.env.rows and 0 <= adj_state[1] < self.env.cols:
+                values.append(self.Value[adj_state])
+            else:
+                values.append(-math.inf)
+        values = np.array(values)
+        best_idx = np.argmax(values)
+        best_action = Action(best_idx)
+        best_value = values[best_idx].item()
+        return best_action, best_value
 
     def add_reward(self, reward):
         self.Reward += reward
@@ -45,25 +54,7 @@ class AI_Agent:
 
     def set_value (self, value):
         self.Value = np.array(value)
-
-    # region
-    def policy_eval (self):
-        accuracy = 0.0001
-        acc = 1
-        while acc > accuracy:
-            acc = 0
-            for row in range(self.env.rows):
-                for col in range(self.env.cols):
-                    state = row,col
-                    if self.env.board[state] != 0:
-                        continue
-                    old_value = self.Value[state]
-                    action = Action(self.Policy[state])
-                    new_state, reward = self.env(state, action)
-                    new_value = reward + self.gamma * self.Value[new_state]
-                    self.Value[state] = new_value
-                    acc = max(acc, abs(old_value - new_value))
-
+    
     def Policy_from_value (self):
         stable = True
         for row in range(self.env.rows):
@@ -75,46 +66,13 @@ class AI_Agent:
                 best_action = None
                 for action in Action:
                     new_state, reward = self.env.move(state, action)
-                    if v_max < reward + self.gamma * self.Value[new_state]:
-                        v_max = reward + self.gamma * self.Value[new_state]                            
+                    if v_max < reward + self.Value[new_state]:
+                        v_max = reward + self.Value[new_state]                            
                         best_action = action
                 if self.Policy[state] != best_action.value:
                     self.Policy[state] = best_action.value
                     stable = False
         return stable
-    
-
-    def Policy_Iteration (self):
-        policy_stable = False
-
-        while not policy_stable:
-            self.policy_eval()
-            policy_stable = self.Policy_improv()
-        return policy_stable
-
-    # def value_iteration (self):
-    #     accuracy = 0.00001
-    #     acc = 1
-    #     # while acc> accuracy:
-    #     for epoch in range(100):
-    #         acc = 0
-    #         for row in range(self.env.rows):
-    #             for col in range(self.env.cols):
-    #                 state = row, col
-    #                 if self.env.end_of_game(state):
-    #                     continue
-    #                 best_value = -1000
-    #                 for action in Action:   # only legal actions
-    #                     new_state, reward = self.env(state, action)
-    #                     new_value = reward + self.gamma * self.Value[new_state]
-    #                     if new_value > best_value:
-    #                         best_value = new_value
-    #                 old_value = self.Value[state]
-    #                 self.Value[state] = best_value
-    #                 acc = max(acc, abs(old_value - best_value))
-        
-        # self.Policy_from_value()
-    # endregion
 
     def value_iteration (self, epochs = 100):
         for epoch in range(epochs):
@@ -122,12 +80,12 @@ class AI_Agent:
                 for col in range(self.env.cols):
                     state = row, col
                     if self.env.end_of_game(state):
-                        self.Value[state] = 0
+                        self.Value[state] = self.env.board[state]
                         continue
                     best_value = -math.inf
                     for action in Action:   
                         next_state, reward = self.env(state, action)
-                        new_value = reward + self.gamma * self.Value[next_state]
+                        new_value = reward + self.Value[next_state]
                         if new_value > best_value:
                             best_value = new_value
                     self.Value[state] = best_value
